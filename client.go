@@ -57,7 +57,7 @@ func main() {
 		response, readError = readFromServer(connection)
 	}
 	// print BYE message to console
-	fmt.Println(response)
+	fmt.Println(strings.Split(response, " ")[2])
 }
 
 // Reads in command-line inputs given to client program.
