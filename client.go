@@ -37,7 +37,7 @@ func main() {
 
 	response, readError := readFromServer(connection)
 	// loop until we find a BYE message
-	for !strings.Contains(response, "BYE") {
+	for strings.Split(response, " ")[1] != "BYE" {
 		fmt.Println(response)
 		checkError(readError)
 		verifyResponse(response)
