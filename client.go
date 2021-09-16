@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -26,28 +27,42 @@ func main() {
 	} else {
 		connection = tlsConn
 	}
-
 	defer connection.Close()
 
 	helloResponse := clientHello(connection, neu)
-	fmt.Println(helloResponse)
 
-	count := countOccurrence(helloResponse)
-	countCall := fmt.Sprintf("%s %d %s", "ex_string COUNT", count, "\n")
-	_, writeError := connection.Write([]byte(countCall))
-	
-	checkError(writeError)
+	response := helloResponse
 
-	reader := bufio.NewReader(connection)
-	input, err := reader.ReadString('\n')
-	checkError(err)
+	// loop until we find a BYE message
+	for !strings.Contains(response, "BYE") {
+		verifyResponse(response)
+		fmt.Println(response)
+		count := countOccurrence(response)
+		countCall := "ex_string COUNT " + strconv.Itoa(count) + "\n"
+		_, writeError := connection.Write([]byte(countCall))
+		checkError(writeError)
+		response = readResponse(connection)
+	}
+	// fmt.Println(helloResponse)
 
-	// readBuf := make([]byte, 8192)
-	// // n, readError := connection.Read(readBuf)
+	// verifyResponse(helloResponse)
 
+	// count := countOccurrence(helloResponse)
+	// // countCall := fmt.Sprintf("%s %d%c", "ex_string COUNT", count, '\n')
+	// countCall := "ex_string COUNT " + strconv.Itoa(count) + "\n"
+	// _, writeError := connection.Write([]byte(countCall))
+	// checkError(writeError)
+	// reader := bufio.NewReader(connection)
+	// line, _, readError := reader.ReadLine()
 	// checkError(readError)
-
-	fmt.Println(input)
+	// verifyResponse(string(line))
+	// fmt.Println(string(line))
+}
+func readResponse(connection net.Conn) string {
+	reader := bufio.NewReader(connection)
+	line, _, readError := reader.ReadLine()
+	checkError(readError)
+	return string(line)
 }
 
 // Reads in command-line inputs given to client program.
@@ -97,10 +112,11 @@ func makeConn(encrypt bool, CONNECT string) (net.Conn, *tls.Conn, error) {
 func clientHello(connection net.Conn, neu string) string {
 	_, writeError := connection.Write([]byte("ex_string HELLO " + neu + "\n"))
 	checkError(writeError)
+
 	reader := bufio.NewReader(connection)
-	input, err := reader.ReadString('\n')
-	checkError(err)
-	return input
+	line, _, readError := reader.ReadLine()
+	checkError(readError)
+	return string(line)
 }
 
 func countOccurrence(response string) int {
@@ -111,7 +127,29 @@ func countOccurrence(response string) int {
 func checkError(err error) {
 	if err != nil {
 		panic("failed in comm with server; reason: " + err.Error())
-
 	}
 
+}
+
+func verifyResponse(response string) bool {
+	stringArr := strings.Split(response, " ")
+	if len(stringArr) < 2 || stringArr[0] != "ex_string" || invalidCommand(stringArr[1], stringArr) {
+		panic("Response does not conform to the protocol!")
+	}
+	return true
+}
+
+func invalidCommand(command string, array []string) bool {
+	switch(command) {
+	case "HELLO":
+		return len(array) != 3
+	case "FIND":
+		return len(array) != 4
+	case "COUNT":
+		return len(array) != 3
+	case "BYE":
+		return len(array) != 3
+	default:
+		return true
+	}
 }
