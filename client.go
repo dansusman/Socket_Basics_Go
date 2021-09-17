@@ -2,11 +2,11 @@ package main
 
 import (
 	"bufio"
-	"bytes"
+	// "bytes"
 	"crypto/tls"
 	"flag"
 	"fmt"
-	"io"
+	// "io"
 	"net"
 	"os"
 	"strconv"
@@ -114,37 +114,21 @@ func makeConn(encrypt bool, CONNECT string) (net.Conn, *tls.Conn, error) {
 
 // Read the response from the given server connection.
 func readFromServer(connection net.Conn) (string, error) {
+
+	// initialize a new Reader so ReadString() method can be used
 	reader := bufio.NewReader(connection)
-	var buff bytes.Buffer
-	for {
-		// read a single line because we are guaranteed to see a '\n'
-		// at the end of a valid server response
-		line, isPrefix, readError := reader.ReadLine()
 
-		if readError != nil {
-			if readError == io.EOF {
-				break
-			} else {
-				// error is something other than EOF: exit program
-				return "", readError
-			}
-		}
+	// read response until a newline char is found (end of message
+	// according to our protocol)
+	line, readError := reader.ReadString('\n')
 
-		// write to the buffer
-		buff.Write(line)
+	// ensure no errors occurred during reading
+	checkError(readError)
 
-		// From the docs: "If the line was too long for the buffer
-		// then isPrefix is set and the beginning of the line is returned.
-		// The rest of the line will be returned from future calls.
-		// isPrefix will be false when returning the last fragment
-		// of the line."
-		// We are sure that the whole message has been read iff isPrefix
-		// is false, so break out of the loop
-		if !isPrefix {
-			break
-		}
-	}
-	return buff.String(), nil
+	// chop off the newline at the end of line (from the docs:
+	// "returning a string containing the data up to and including the delimiter)"
+	readLine := line[:len(line)-1]
+	return readLine, nil
 }
 
 // Write the given data message to the given server connection.

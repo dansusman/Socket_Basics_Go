@@ -29,9 +29,9 @@ this Monday that *tls.Conn is actually just a specific net.Conn, meaning a
 simple cast from *tls.Conn to net.Conn made abstracting the code easy.
 
 I handle reading responses from the server with a bufio.NewReader, and, since we
-know a well-formed response will always end with '\n', I utilize the ReadLine()
-function. Barring some weird bugs I introduced in my error handling, reading was
-somewhat straightforward to implement as well.
+know a well-formed response will always end with '\n', I utilize the
+ReadString('\n') function. Barring some weird bugs I introduced in my error
+handling, reading was somewhat straightforward to implement as well.
 
 Writing to the server was as simple as calling the Write() of net.Conn. Easy!
 
@@ -55,7 +55,9 @@ loop, ..., read BYE, print secret flag.
 
 - Until I read the docs for ReadLine(), I didn't understand what isPrefix was
   used for, so I just ignored it for a day of programming. That made for some
-  useless reading of FIND messages.
+  useless reading of FIND messages. I stuck with it and implemented a version of
+  my helper method that used ReadLine(). Then I found ReadString('\n') which
+  simplified things further still.
 
 ## Testing Code
 
