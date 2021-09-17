@@ -56,7 +56,7 @@ func main() {
 		writeToServer(connection, countMessage)
 		response, readError = readFromServer(connection)
 	}
-	// print BYE message to console
+	// print secret flag to console
 	fmt.Println(strings.Split(response, " ")[2])
 }
 
@@ -98,7 +98,6 @@ func readArgs() (int, bool, string, string) {
 	neuId := args[1]
 
 	return *portPtr, *tlsPtr, hostname, neuId
-
 }
 
 // Makes connection to the server at the given CONNECT
@@ -121,6 +120,7 @@ func readFromServer(connection net.Conn) (string, error) {
 		// read a single line because we are guaranteed to see a '\n'
 		// at the end of a valid server response
 		line, isPrefix, readError := reader.ReadLine()
+
 		if readError != nil {
 			if readError == io.EOF {
 				break
