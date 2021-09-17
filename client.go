@@ -2,11 +2,9 @@ package main
 
 import (
 	"bufio"
-	// "bytes"
 	"crypto/tls"
 	"flag"
 	"fmt"
-	// "io"
 	"net"
 	"os"
 	"strconv"
