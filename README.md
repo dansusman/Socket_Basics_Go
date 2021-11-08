@@ -1,4 +1,6 @@
-# CS 3700 Project 1 - Daniel Susman
+# Socket Basics
+
+This repo holds the source code for Socket Basics, the first project in my Networks and Distributed Systems course at NEU. It is written in Golang.
 
 ## High-level Approach
 
